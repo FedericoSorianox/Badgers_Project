@@ -1,0 +1,20 @@
+# Entorno virtual de Python
+venv/
+*.pyc
+__pycache__/
+
+# Base de datos de Django
+db.sqlite3
+
+# Archivos de entorno (¡Contiene secretos!)
+.env
+
+# Dependencias de Node.js
+node_modules/
+
+# Archivos de build de React
+build/
+dist/
+
+# Archivos de log y temporales
+*.log
