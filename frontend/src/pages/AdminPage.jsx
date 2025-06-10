@@ -95,9 +95,16 @@ const AdminPage = () => {
     const handleExport = async (endpoint, filename) => {
         try {
             const response = await apiClient.get(`/${endpoint}/?limit=10000`);
-            downloadCSV(response.data.results, filename);
+            // Maneja tanto respuestas paginadas como no paginadas
+            const data = response.data.results || response.data;
+            if (!data || data.length === 0) {
+                alert("No hay datos para exportar.");
+                return;
+            }
+            downloadCSV(data, filename);
         } catch (error) {
             console.error(`Error al exportar ${filename}:`, error);
+            alert(`Error al exportar ${filename}. Por favor, intenta nuevamente.`);
         }
     };
 

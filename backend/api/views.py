@@ -79,6 +79,7 @@ class SocioViewSet(viewsets.ModelViewSet):
 class PagoViewSet(viewsets.ModelViewSet):
     queryset = Pago.objects.all().order_by('-fecha_pago')
     serializer_class = PagoSerializer
+    pagination_class = None  # Desactivamos la paginación
     
     @action(detail=False, methods=['post'], parser_classes=[MultiPartParser])
     def import_csv(self, request, *args, **kwargs):
@@ -162,6 +163,8 @@ class ProductoViewSet(viewsets.ModelViewSet):
 class VentaViewSet(viewsets.ModelViewSet):
     queryset = Venta.objects.all().order_by('-fecha_venta')
     serializer_class = VentaSerializer
+    pagination_class = None  # Desactivamos la paginación
+
 
 class GastoViewSet(viewsets.ModelViewSet):
     queryset = Gasto.objects.all().order_by('-fecha')

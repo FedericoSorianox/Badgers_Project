@@ -24,11 +24,14 @@ const FinanzasPage = () => {
                     apiClient.get('/ventas/?limit=10000'),
                     apiClient.get('/gastos/?limit=10000'),
                 ]);
-                setPagos(pagosRes.data.results);
-                setVentas(ventasRes.data.results);
-                setGastos(gastosRes.data.results);
+                setPagos(pagosRes.data.results || pagosRes.data);
+                setVentas(ventasRes.data.results || ventasRes.data);
+                setGastos(gastosRes.data.results || gastosRes.data);
             } catch (error) {
                 console.error("Error fetching financial data:", error);
+                setPagos([]);
+                setVentas([]);
+                setGastos([]);
             }
         };
         fetchAllData();
