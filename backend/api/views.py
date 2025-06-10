@@ -5,7 +5,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
-
+from rest_framework import viewsets, status, filters 
+from rest_framework.views import APIView
 from .models import Socio, Pago, Producto, Venta, Gasto
 from .serializers import SocioSerializer, PagoSerializer, ProductoSerializer, VentaSerializer, GastoSerializer
 
@@ -25,6 +26,14 @@ def parse_date_from_csv(date_str):
 class SocioViewSet(viewsets.ModelViewSet):
     queryset = Socio.objects.all().order_by('nombre')
     serializer_class = SocioSerializer
+    pagination_class = None  # <--- Agrega esta línea para desactivar la paginación
+    
+     # --- ¡AÑADE ESTA LÍNEA! ---
+    # Le dice a Django REST Framework que use el campo 'ci' en la URL 
+    # en lugar del 'id' por defecto.
+    lookup_field = 'ci' 
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nombre', 'ci'] # Campos en los que buscará
 
     @action(detail=False, methods=['post'], parser_classes=[MultiPartParser])
     def import_csv(self, request, *args, **kwargs):
@@ -157,3 +166,14 @@ class VentaViewSet(viewsets.ModelViewSet):
 class GastoViewSet(viewsets.ModelViewSet):
     queryset = Gasto.objects.all().order_by('-fecha')
     serializer_class = GastoSerializer
+    
+class DashboardStatsView(APIView):
+    def get(self, request, *args, **kwargs):
+        active_socios_count = Socio.objects.filter(activo=True).count()
+        products_in_inventory_count = Producto.objects.count()
+
+        stats = {
+            'socios_activos': active_socios_count,
+            'productos_en_inventario': products_in_inventory_count,
+        }
+        return Response(stats)    

@@ -1,200 +1,262 @@
 // src/pages/InventarioPage.jsx
-import React, { useState, useEffect } from 'react';
-import apiClient from '../api';
-import { 
-    Tabs, Tab, Box, Typography, Paper, Table, TableBody, TableCell, 
-    TableContainer, TableHead, TableRow, Button, TextField, Select, 
-    MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions 
-} from '@mui/material';
 
-// Formulario reutilizable para productos
-const ProductoForm = ({ open, onClose, onSave, producto }) => {
-    const [formData, setFormData] = useState({});
+import React, { useState, useEffect, useCallback } from 'react';
+import apiClient from '../api';
+import {
+    Container, Paper, Typography, Box, Tabs, Tab, TextField, Button,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, Select, MenuItem,
+    IconButton, Avatar
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+// --- Componente de Panel para cada Tab (sin cambios) ---
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+    return (
+        <div role="tabpanel" hidden={value !== index} {...other}>
+            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+        </div>
+    );
+}
+
+// --- Componente de Formulario para Productos (con fotos y modo vista) ---
+const ProductForm = ({ open, onClose, onSave, product, isViewOnly = false }) => {
+    const [formData, setFormData] = useState({ nombre: '', precio_costo: '', precio_venta: '', stock: '' });
     const [fotoFile, setFotoFile] = useState(null);
 
     useEffect(() => {
-        setFormData(producto || { nombre: '', precio_costo: 0, precio_venta: 0, stock: 0 });
-    }, [producto]);
+        setFormData(product || { nombre: '', precio_costo: '0', precio_venta: '0', stock: '0' });
+        setFotoFile(null);
+    }, [product]);
 
-    const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
     const handleFileChange = (e) => setFotoFile(e.target.files[0]);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        const data = new FormData();
-        Object.keys(formData).forEach(key => data.append(key, formData[key] || ''));
-        if (fotoFile) data.append('foto', fotoFile);
-
-        try {
-            if (producto) {
-                await apiClient.put(`/productos/${producto.id}/`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
-            } else {
-                await apiClient.post('/productos/', data, { headers: { 'Content-Type': 'multipart/form-data' } });
-            }
-            onSave();
-        } catch (error) {
-            console.error("Error guardando producto", error.response?.data);
-        }
+        onSave(formData, fotoFile, product?.id);
     };
 
     return (
         <Dialog open={open} onClose={onClose}>
-            <DialogTitle>{producto ? 'Editar Producto' : 'Agregar Producto'}</DialogTitle>
+            <DialogTitle>{isViewOnly ? 'Detalles del Producto' : (product ? 'Editar Producto' : 'Agregar Producto')}</DialogTitle>
             <DialogContent>
-                <TextField name="nombre" label="Nombre" fullWidth margin="normal" value={formData.nombre || ''} onChange={handleChange} />
-                <TextField name="precio_costo" label="Precio Costo" type="number" fullWidth margin="normal" value={formData.precio_costo || ''} onChange={handleChange} />
-                <TextField name="precio_venta" label="Precio Venta" type="number" fullWidth margin="normal" value={formData.precio_venta || ''} onChange={handleChange} />
-                <TextField name="stock" label="Stock Inicial" type="number" fullWidth margin="normal" value={formData.stock || ''} onChange={handleChange} />
-                <Button variant="contained" component="label" sx={{mt: 2}}> Subir Foto <input type="file" hidden onChange={handleFileChange} /> </Button>
+                {product && product.foto && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                        <Avatar src={product.foto} sx={{ width: 100, height: 100 }} variant="rounded" alt={formData.nombre} />
+                    </Box>
+                )}
+                <TextField autoFocus margin="dense" name="nombre" label="Nombre" fullWidth value={formData.nombre} onChange={handleChange} disabled={isViewOnly} />
+                <TextField margin="dense" name="precio_costo" label="Precio de Costo" type="number" fullWidth value={formData.precio_costo} onChange={handleChange} disabled={isViewOnly} />
+                <TextField margin="dense" name="precio_venta" label="Precio de Venta" type="number" fullWidth value={formData.precio_venta} onChange={handleChange} disabled={isViewOnly} />
+                <TextField margin="dense" name="stock" label="Stock" type="number" fullWidth value={formData.stock} onChange={handleChange} disabled={isViewOnly} />
+                {!isViewOnly && (
+                    <Button variant="contained" component="label" sx={{ mt: 2 }}>
+                        Subir Foto
+                        <input type="file" hidden onChange={handleFileChange} />
+                    </Button>
+                )}
+                {fotoFile && <Typography variant="body2" sx={{mt:1}}>{fotoFile.name}</Typography>}
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancelar</Button>
-                <Button onClick={handleSubmit}>Guardar</Button>
+                <Button onClick={onClose}>{isViewOnly ? 'Cerrar' : 'Cancelar'}</Button>
+                {!isViewOnly && <Button onClick={handleSubmit} variant="contained">Guardar</Button>}
             </DialogActions>
         </Dialog>
     );
 };
 
-
-const InventarioPage = () => {
-    const [tabIndex, setTabIndex] = useState(0);
+// --- Componente para la Lista de Productos (Mejorado con todas las acciones) ---
+const ProductListComponent = ({ onProductUpdate, onEdit }) => {
     const [productos, setProductos] = useState([]);
-    const [ventas, setVentas] = useState([]);
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingProducto, setEditingProducto] = useState(null);
     
-    const fetchAllData = async () => {
+    const fetchProductos = useCallback(async () => {
         try {
-            const [prodRes, ventRes] = await Promise.all([apiClient.get('/productos/'), apiClient.get('/ventas/')]);
-            setProductos(prodRes.data.results);
-            setVentas(ventRes.data.results);
+            const response = await apiClient.get('/productos/');
+            setProductos(response.data.results ? response.data.results : response.data);
         } catch (error) {
-            console.error("Error al cargar datos de inventario", error);
+            console.error("Error al cargar productos:", error);
         }
-    };
-
-    useEffect(() => {
-        fetchAllData();
     }, []);
 
-    const handleTabChange = (event, newValue) => setTabIndex(newValue);
+    useEffect(() => {
+        fetchProductos();
+    }, [fetchProductos]);
 
-    const handleSaveProducto = () => {
-        setFormOpen(false);
-        setEditingProducto(null);
-        fetchAllData();
-    };
-
-    const handleDeleteProducto = async (id) => {
-        if (window.confirm('¿Seguro que quieres eliminar este producto?')) {
-            await apiClient.delete(`/productos/${id}/`);
-            fetchAllData();
-        }
-    };
-    
-    const handleVentaSubmit = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const productoId = formData.get('producto');
-        const cantidad = parseInt(formData.get('cantidad'));
-        const producto = productos.find(p => p.id === parseInt(productoId));
-        
-        if (producto.stock < cantidad) {
-            alert('Stock insuficiente');
-            return;
-        }
-
-        const payload = {
-            producto: producto.id,
-            cantidad: cantidad,
-            total_venta: producto.precio_venta * cantidad
-        };
-
-        try {
-            await apiClient.post('/ventas/', payload);
-            // El backend debería manejar la actualización del stock, así que solo recargamos
-            fetchAllData();
-            alert('Venta registrada!');
-            e.target.reset();
-        } catch (error) {
-            console.error("Error al registrar venta", error.response?.data);
+    const handleDelete = async (id) => {
+        if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+            try {
+                await apiClient.delete(`/productos/${id}/`);
+                fetchProductos();
+                onProductUpdate();
+            } catch (error) {
+                console.error("Error al eliminar producto:", error);
+            }
         }
     };
 
     return (
-        <div>
-            <Typography variant="h4" gutterBottom>Gestión de Inventario y Ventas</Typography>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={tabIndex} onChange={handleTabChange}>
-                    <Tab label="Registrar Venta" />
-                    <Tab label="Lista de Productos" />
-                    <Tab label="Historial de Ventas" />
-                </Tabs>
-            </Box>
-
-            {/* Panel 0: Registrar Venta */}
-            <Box hidden={tabIndex !== 0} p={3}>
-                <Typography variant="h6">Nueva Venta</Typography>
-                 <Paper component="form" onSubmit={handleVentaSubmit} sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                    <FormControl fullWidth>
-                        <InputLabel>Producto</InputLabel>
-                        <Select name="producto" label="Producto" required>
-                            {productos.map(p => <MenuItem key={p.id} value={p.id}>{p.nombre} (Stock: {p.stock})</MenuItem>)}
-                        </Select>
-                    </FormControl>
-                    <TextField name="cantidad" label="Cantidad" type="number" required defaultValue={1} />
-                    <Button type="submit" variant="contained">Vender</Button>
-                 </Paper>
-            </Box>
-
-            {/* Panel 1: Lista de Productos */}
-            <Box hidden={tabIndex !== 1} p={3}>
-                <Button variant="contained" onClick={() => { setEditingProducto(null); setFormOpen(true); }} sx={{mb: 2}}>Agregar Producto</Button>
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead><TableRow><TableCell>Nombre</TableCell><TableCell>Precio Venta</TableCell><TableCell>Stock</TableCell><TableCell>Acciones</TableCell></TableRow></TableHead>
-                        <TableBody>
-                            {productos.map(p => (
-                                <TableRow key={p.id}>
-                                    <TableCell>{p.nombre}</TableCell>
-                                    <TableCell>${p.precio_venta}</TableCell>
-                                    <TableCell>{p.stock}</TableCell>
-                                    <TableCell>
-                                        <Button size="small" onClick={() => {setEditingProducto(p); setFormOpen(true); }}>Editar</Button>
-                                        <Button size="small" color="error" onClick={() => handleDeleteProducto(p.id)}>Eliminar</Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Box>
-
-            {/* Panel 2: Historial de Ventas */}
-            <Box hidden={tabIndex !== 2} p={3}>
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead><TableRow><TableCell>Fecha</TableCell><TableCell>Producto</TableCell><TableCell>Cantidad</TableCell><TableCell>Total</TableCell></TableRow></TableHead>
-                        <TableBody>
-                            {ventas.map(v => {
-                                const producto = productos.find(p => p.id === v.producto);
-                                return (
-                                    <TableRow key={v.id}>
-                                        <TableCell>{new Date(v.fecha_venta).toLocaleString()}</TableCell>
-                                        <TableCell>{producto ? producto.nombre : 'Producto Eliminado'}</TableCell>
-                                        <TableCell>{v.cantidad}</TableCell>
-                                        <TableCell>${v.total_venta}</TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Box>
-
-            <ProductoForm open={formOpen} onClose={() => setFormOpen(false)} onSave={handleSaveProducto} producto={editingProducto} />
-        </div>
+        <TableContainer component={Paper}>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Foto</TableCell>
+                        <TableCell>Nombre</TableCell>
+                        <TableCell align="right">Precio de Costo</TableCell>
+                        <TableCell align="right">Precio de Venta</TableCell>
+                        <TableCell align="right">Ganancia</TableCell>
+                        <TableCell align="right">Stock</TableCell>
+                        <TableCell align="center">Acciones</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {productos.map((p) => (
+                        <TableRow key={p.id} hover >
+                            <TableCell><Avatar src={p.foto} variant="rounded" /></TableCell>
+                            <TableCell>{p.nombre}</TableCell>
+                            <TableCell align="right">${parseFloat(p.precio_costo).toFixed(2)}</TableCell>
+                            <TableCell align="right">${parseFloat(p.precio_venta).toFixed(2)}</TableCell>
+                            <TableCell align="right">${p.ganancia?.toFixed(2) || '0.00'}</TableCell>
+                            <TableCell align="right">{p.stock}</TableCell>
+                            <TableCell align="center">
+                                <IconButton onClick={() => onEdit(p)}><EditIcon /></IconButton>
+                                <IconButton onClick={() => handleDelete(p.id)}><DeleteIcon color="error" /></IconButton>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
     );
 };
 
+// --- Componente para Registrar Venta ---
+const VentaFormComponent = ({ productos, onVentaSuccess }) => {
+    const [venta, setVenta] = useState({ producto: '', cantidad: 1 });
+
+    const handleChange = (e) => setVenta({ ...venta, [e.target.name]: e.target.value });
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!venta.producto || venta.cantidad <= 0) {
+            alert("Por favor, selecciona un producto y una cantidad válida.");
+            return;
+        }
+        try {
+            await apiClient.post('/ventas/', {
+                producto: venta.producto,
+                cantidad: parseInt(venta.cantidad)
+            });
+            alert('¡Venta registrada con éxito!');
+            onVentaSuccess(); // Llama a la función para actualizar el stock
+            setVenta({ producto: '', cantidad: 1 });
+        } catch (error) {
+            console.error("Error al registrar venta:", error.response?.data);
+            alert(`Error: ${JSON.stringify(error.response.data)}`);
+        }
+    };
+
+    return (
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <FormControl fullWidth>
+                <InputLabel>Producto</InputLabel>
+                <Select name="producto" value={venta.producto} label="Producto" onChange={handleChange}>
+                    {productos.map(p => <MenuItem key={p.id} value={p.id} disabled={p.stock <= 0}>{p.nombre} (Stock: {p.stock})</MenuItem>)}
+                </Select>
+            </FormControl>
+            <TextField name="cantidad" label="Cantidad" type="number" InputProps={{ inputProps: { min: 1 } }} value={venta.cantidad} onChange={handleChange} sx={{width: 150}}/>
+            <Button type="submit" variant="contained">Vender</Button>
+        </Box>
+    );
+};
+
+
+// --- Componente Principal de la Página de Inventario ---
+const InventarioPage = () => {
+    const [tabValue, setTabValue] = useState(1);
+    const [productos, setProductos] = useState([]);
+    const [formOpen, setFormOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState(null);
+
+    const fetchAllProducts = useCallback(async () => {
+        try {
+            const response = await apiClient.get('/productos/?limit=1000');
+            setProductos(response.data.results ? response.data.results : response.data);
+        } catch (error) {
+            console.error("Error al cargar productos:", error);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchAllProducts();
+    }, [fetchAllProducts]);
+
+    const handleTabChange = (event, newValue) => setTabValue(newValue);
+
+    const handleOpenEditForm = (product) => {
+        setEditingProduct(product);
+        setFormOpen(true);
+    };
+
+    const handleSave = async (data, file, id) => {
+        const formData = new FormData();
+        Object.keys(data).forEach(key => formData.append(key, data[key]));
+        if (file) {
+            formData.append('foto', file);
+        }
+
+        try {
+            if (id) {
+                await apiClient.patch(`/productos/${id}/`, formData, { headers: { 'Content-Type': 'multipart/form-data' }});
+            } else {
+                await apiClient.post('/productos/', formData, { headers: { 'Content-Type': 'multipart/form-data' }});
+            }
+            fetchAllProducts();
+            setFormOpen(false);
+            setEditingProduct(null);
+        } catch (error) {
+            console.error("Error al guardar producto:", error.response?.data);
+        }
+    };
+
+    return (
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Paper sx={{ p: 3, width: '100%' }}>
+                <Typography variant="h4" gutterBottom>
+                    Gestión de Inventario y Ventas
+                </Typography>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                    <Tabs value={tabValue} onChange={handleTabChange}>
+                        <Tab label="Registrar Venta" />
+                        <Tab label="Lista de Productos" />
+                        <Tab label="Historial de Ventas" />
+                    </Tabs>
+                    {tabValue === 1 && (
+                         <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenEditForm(null)} sx={{ mb: 1 }}>
+                            Agregar Producto
+                        </Button>
+                    )}
+                </Box>
+
+                <TabPanel value={tabValue} index={0}>
+                    <VentaFormComponent productos={productos} onVentaSuccess={fetchAllProducts} />
+                </TabPanel>
+                <TabPanel value={tabValue} index={1}>
+                    <ProductListComponent onProductUpdate={fetchAllProducts} onEdit={handleOpenEditForm} />
+                </TabPanel>
+                <TabPanel value={tabValue} index={2}>
+                    <Typography>Historial de ventas (próximamente)...</Typography>
+                </TabPanel>
+
+            </Paper>
+            <ProductForm open={formOpen} onClose={() => setFormOpen(false)} onSave={handleSave} product={editingProduct} />
+        </Container>
+    );
+};
+
+// --- ¡LA LÍNEA MÁS IMPORTANTE QUE FALTABA! ---
 export default InventarioPage;

@@ -13,6 +13,8 @@ class Socio(models.Model):
     comentarios = models.TextField(blank=True, null=True)
     foto = models.ImageField(upload_to='socios_fotos/', blank=True, null=True) # Mejor que Base64
     fecha_registro = models.DateTimeField(auto_now_add=True)
+    fecha_registro = models.DateField(auto_now_add=True, null=True, blank=True)
+    activo = models.BooleanField(default=True) 
 
     def __str__(self):
         return self.nombre
@@ -35,6 +37,11 @@ class Producto(models.Model):
     precio_costo = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     stock = models.IntegerField(default=0)
     foto = models.ImageField(upload_to='productos_fotos/', blank=True, null=True)
+    
+    @property
+    def ganancia(self):
+        if self.precio_venta is not None and self.precio_costo is not None:
+            return self.precio_venta - self.precio_costo
 
     def __str__(self):
         return self.nombre
