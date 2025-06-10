@@ -9,6 +9,8 @@ db.sqlite3
 # Archivos de entorno (¡Contiene secretos!)
 .env
 
+/backend/media/
+
 # Dependencias de Node.js
 node_modules/
 
