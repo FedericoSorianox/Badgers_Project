@@ -56,7 +56,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'corsheaders.middleware.CorsMiddleware', # <- Ponerlo aquí arriba
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -152,10 +151,12 @@ REST_FRAMEWORK = {
 
 # Configuración de CORS
 CORS_ALLOWED_ORIGINS = [
+    "https://thebadgersadmin.netlify.app",
     "http://localhost:5173", # La dirección de tu frontend de React (Vite)
     "http://127.0.0.1:5173",
 ]
-
+CORS_ALLOW_ALL_HEADERS = True
+CORS_ALLOW_CREDENTIALS = True
 # Configuración de Medios (para las fotos)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
