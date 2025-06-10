@@ -64,10 +64,10 @@ const SocioForm = ({ open, onClose, onSave, socio, isViewOnly = false }) => {
                 )}
                 
                 {/* Campos del formulario (deshabilitados en modo 'solo lectura') */}
-                <TextField margin="dense" name="ci" label="CI" fullWidth value={formData.ci || ''} disabled />
-                <TextField margin="dense" name="nombre" label="Nombre Completo" fullWidth value={formData.nombre || ''} disabled={isViewOnly} />
-                <TextField margin="dense" name="celular" label="Celular" fullWidth value={formData.celular || ''} disabled={isViewOnly} />
-                <TextField margin="dense" name="fecha_nacimiento" label="Fecha de Nacimiento" type="date" fullWidth InputLabelProps={{ shrink: true }} value={formData.fecha_nacimiento || ''} disabled={isViewOnly} />
+                <TextField margin="dense" name="ci" label="CI" fullWidth value={formData.ci || ''} onChange={handleChange} disabled={isViewOnly || !!socio} />
+                <TextField margin="dense" name="nombre" label="Nombre Completo" fullWidth value={formData.nombre || ''} onChange={handleChange} disabled={isViewOnly} />
+                <TextField margin="dense" name="celular" label="Celular" fullWidth value={formData.celular || ''} onChange={handleChange} disabled={isViewOnly} />
+                <TextField margin="dense" name="fecha_nacimiento" label="Fecha de Nacimiento" type="date" fullWidth InputLabelProps={{ shrink: true }} value={formData.fecha_nacimiento || ''} onChange={handleChange} disabled={isViewOnly} />
                 <FormControl fullWidth margin="dense">
                     <InputLabel>Tipo de Cuota</InputLabel>
                     <Select name="tipo_cuota" label="Tipo de Cuota" value={formData.tipo_cuota || 'Libre - $2000'} onChange={handleChange} disabled={isViewOnly}>
@@ -75,10 +75,10 @@ const SocioForm = ({ open, onClose, onSave, socio, isViewOnly = false }) => {
                         <MenuItem value="Solo Pesas - $800">Solo Pesas - $800</MenuItem>
                     </Select>
                 </FormControl>
-                <TextField margin="dense" name="contacto_emergencia" label="Contacto de Emergencia" fullWidth value={formData.contacto_emergencia || ''} disabled={isViewOnly} />
-                <TextField margin="dense" name="emergencia_movil" label="Teléfono de Emergencia" fullWidth value={formData.emergencia_movil || ''} disabled={isViewOnly} />
-                <TextField margin="dense" name="enfermedades" label="Enfermedades/Alergias" multiline rows={2} fullWidth value={formData.enfermedades || ''} disabled={isViewOnly} />
-                <TextField margin="dense" name="comentarios" label="Comentarios" multiline rows={2} fullWidth value={formData.comentarios || ''} disabled={isViewOnly} />
+                <TextField margin="dense" name="contacto_emergencia" label="Contacto de Emergencia" fullWidth value={formData.contacto_emergencia || ''} onChange={handleChange} disabled={isViewOnly} />
+                <TextField margin="dense" name="emergencia_movil" label="Teléfono de Emergencia" fullWidth value={formData.emergencia_movil || ''} onChange={handleChange} disabled={isViewOnly} />
+                <TextField margin="dense" name="enfermedades" label="Enfermedades/Alergias" multiline rows={2} fullWidth value={formData.enfermedades || ''} onChange={handleChange} disabled={isViewOnly} />
+                <TextField margin="dense" name="comentarios" label="Comentarios" multiline rows={2} fullWidth value={formData.comentarios || ''} onChange={handleChange} disabled={isViewOnly} />
                 
                 {!isViewOnly && (
                     <Box sx={{mt: 2}}>
