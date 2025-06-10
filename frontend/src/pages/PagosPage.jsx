@@ -4,7 +4,7 @@ import apiClient from '../api';
 import { 
     Button, TextField, Select, MenuItem, FormControl, InputLabel, Paper, 
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Box,
-    Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip
+    Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip, Container
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -281,106 +281,112 @@ const PagosPage = () => {
     };
 
     return (
-        <div>
-            <Typography variant="h4" gutterBottom>Gestión de Pagos</Typography>
-            <Paper sx={{ p: 2, mb: 3 }}>
-                <Typography variant="h6">Registrar Nuevo Pago</Typography>
-                
-                <Box component="form" onSubmit={handleRegistrarPago} sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 2 }}>
-                    <FormControl sx={{ minWidth: 220, flex: 3 }}> 
-                        <InputLabel>Socio</InputLabel>
-                        <Select name="socio" value={newPago.socio} label="Socio" onChange={handleNewPagoChange}>
-                            {socios && socios.map(s => <MenuItem key={s.ci} value={s.ci}>{s.nombre}</MenuItem>)}
-                        </Select>
-                    </FormControl>
+        <Box sx={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            py: { xs: 2, md: 4 },
+        }}>
+            <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 4, lg: 8 } }}>
+                <Typography variant="h4" gutterBottom>Gestión de Pagos</Typography>
+                <Paper sx={{ p: 2, mb: 3 }}>
+                    <Typography variant="h6">Registrar Nuevo Pago</Typography>
+                    
+                    <Box component="form" onSubmit={handleRegistrarPago} sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 2 }}>
+                        <FormControl sx={{ minWidth: 220, flex: 3 }}> 
+                            <InputLabel>Socio</InputLabel>
+                            <Select name="socio" value={newPago.socio} label="Socio" onChange={handleNewPagoChange}>
+                                {socios && socios.map(s => <MenuItem key={s.ci} value={s.ci}>{s.nombre}</MenuItem>)}
+                            </Select>
+                        </FormControl>
 
-                    <FormControl sx={{ minWidth: 100, flex: 1 }}>
-                        <InputLabel>Mes</InputLabel>
-                        <Select name="mes" value={newPago.mes} label="Mes" onChange={handleNewPagoChange}>
-                            {mesesNombres.map((nombre, i) => <MenuItem key={i} value={i + 1}>{nombre}</MenuItem>)}
-                        </Select>
-                    </FormControl>
+                        <FormControl sx={{ minWidth: 100, flex: 1 }}>
+                            <InputLabel>Mes</InputLabel>
+                            <Select name="mes" value={newPago.mes} label="Mes" onChange={handleNewPagoChange}>
+                                {mesesNombres.map((nombre, i) => <MenuItem key={i} value={i + 1}>{nombre}</MenuItem>)}
+                            </Select>
+                        </FormControl>
 
-                    <TextField 
-                        name="año" 
-                        label="Año" 
-                        type="number" 
-                        value={newPago.año} 
-                        onChange={handleNewPagoChange} 
-                        sx={{ minWidth: 80, flex: 1 }}
-                    />
+                        <TextField 
+                            name="año" 
+                            label="Año" 
+                            type="number" 
+                            value={newPago.año} 
+                            onChange={handleNewPagoChange} 
+                            sx={{ minWidth: 80, flex: 1 }}
+                        />
 
-                    <TextField 
-                        name="monto" 
-                        label="Monto" 
-                        type="number" 
-                        value={newPago.monto} 
-                        onChange={handleNewPagoChange}
-                        sx={{ minWidth: 100, flex: 1 }} 
-                    />
+                        <TextField 
+                            name="monto" 
+                            label="Monto" 
+                            type="number" 
+                            value={newPago.monto} 
+                            onChange={handleNewPagoChange}
+                            sx={{ minWidth: 100, flex: 1 }} 
+                        />
 
-                    <Button type="submit" variant="contained">Guardar</Button>
-                </Box>
-            </Paper>
+                        <Button type="submit" variant="contained">Guardar</Button>
+                    </Box>
+                </Paper>
 
-            <Typography variant="h5" gutterBottom>Estado de Pagos Anual</Typography>
-            <FormControl sx={{ minWidth: 140, mb: 2 }}>
-                <InputLabel>Año</InputLabel>
-                <Select value={selectedYear} label="Año" onChange={(e) => setSelectedYear(e.target.value)}>
-                    {years.map(y => <MenuItem key={y} value={y}>{y}</MenuItem>)}
-                </Select>
-            </FormControl>
+                <Typography variant="h5" gutterBottom>Estado de Pagos Anual</Typography>
+                <FormControl sx={{ minWidth: 140, mb: 2 }}>
+                    <InputLabel>Año</InputLabel>
+                    <Select value={selectedYear} label="Año" onChange={(e) => setSelectedYear(e.target.value)}>
+                        {years.map(y => <MenuItem key={y} value={y}>{y}</MenuItem>)}
+                    </Select>
+                </FormControl>
 
-            <TableContainer component={Paper}>
-                <Table stickyHeader>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Socio</TableCell>
-                            {mesesNombres.map(mes => <TableCell key={mes} align="center">{mes}</TableCell>)}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {socios && socios.length > 0 ? (
-                            socios.map(socio => (
-                                <TableRow key={socio.ci}>
-                                    <TableCell>{socio.nombre}</TableCell>
-                                    {mesesNombres.map((_, i) => (
-                                        <TableCell key={i} align="center">
-                                            {getStatus(socio, i + 1)}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
+                <TableContainer component={Paper}>
+                    <Table stickyHeader>
+                        <TableHead>
                             <TableRow>
-                                <TableCell colSpan={13} align="center">
-                                    Cargando socios...
-                                </TableCell>
+                                <TableCell>Socio</TableCell>
+                                {mesesNombres.map(mes => <TableCell key={mes} align="center">{mes}</TableCell>)}
                             </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        </TableHead>
+                        <TableBody>
+                            {socios && socios.length > 0 ? (
+                                socios.map(socio => (
+                                    <TableRow key={socio.ci}>
+                                        <TableCell>{socio.nombre}</TableCell>
+                                        {mesesNombres.map((_, i) => (
+                                            <TableCell key={i} align="center">
+                                                {getStatus(socio, i + 1)}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={13} align="center">
+                                        Cargando socios...
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
 
-            <ConfirmPagoDialog
-                open={confirmDialog.open}
-                onClose={() => setConfirmDialog({ open: false, socio: null, mes: null })}
-                onConfirm={handleRegistrarPago}
-                socio={confirmDialog.socio}
-                mes={confirmDialog.mes}
-                año={selectedYear}
-            />
+                <ConfirmPagoDialog
+                    open={confirmDialog.open}
+                    onClose={() => setConfirmDialog({ open: false, socio: null, mes: null })}
+                    onConfirm={handleRegistrarPago}
+                    socio={confirmDialog.socio}
+                    mes={confirmDialog.mes}
+                    año={selectedYear}
+                />
 
-            <InfoDialog
-                open={infoDialog.open}
-                onClose={() => setInfoDialog({ open: false, socio: null, mes: null })}
-                onConfirm={handleRegistrarPago}
-                socio={infoDialog.socio}
-                mes={infoDialog.mes}
-                año={selectedYear}
-                isSocioSinPago={infoDialog.isSocioSinPago}
-            />
-        </div>
+                <InfoDialog
+                    open={infoDialog.open}
+                    onClose={() => setInfoDialog({ open: false, socio: null, mes: null })}
+                    onConfirm={handleRegistrarPago}
+                    socio={infoDialog.socio}
+                    mes={infoDialog.mes}
+                    año={selectedYear}
+                    isSocioSinPago={infoDialog.isSocioSinPago}
+                />
+            </Container>
+        </Box>
     );
 };
 

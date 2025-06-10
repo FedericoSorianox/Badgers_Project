@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import apiClient from '../api';
 import { 
     Grid, Card, CardContent, Typography, TextField, Select, MenuItem, 
-    FormControl, InputLabel, Paper, Button, Box 
+    FormControl, InputLabel, Paper, Button, Box, Container 
 } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -84,67 +84,73 @@ const FinanzasPage = () => {
     const months = ["Todos", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
     return (
-        <div>
-            <Typography variant="h4" gutterBottom>Gestión de Finanzas</Typography>
-            <Paper sx={{ p: 2, mb: 3, display: 'flex', gap: 2 }}>
-                <FormControl>
-                    <InputLabel>Año</InputLabel>
-                    <Select value={year} label="Año" onChange={e => setYear(e.target.value)}>
-                        {years.map(y => <MenuItem key={y} value={y}>{y}</MenuItem>)}
-                    </Select>
-                </FormControl>
-                <FormControl>
-                    <InputLabel>Mes</InputLabel>
-                    <Select value={month} label="Mes" onChange={e => setMonth(e.target.value)}>
-                        {months.map((m, i) => <MenuItem key={m} value={i}>{m}</MenuItem>)}
-                    </Select>
-                </FormControl>
-            </Paper>
+        <Box sx={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            py: { xs: 2, md: 4 },
+        }}>
+            <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 4, lg: 8 } }}>
+                <Typography variant="h4" gutterBottom>Gestión de Finanzas</Typography>
+                <Paper sx={{ p: 2, mb: 3, display: 'flex', gap: 2 }}>
+                    <FormControl>
+                        <InputLabel>Año</InputLabel>
+                        <Select value={year} label="Año" onChange={e => setYear(e.target.value)}>
+                            {years.map(y => <MenuItem key={y} value={y}>{y}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <FormControl>
+                        <InputLabel>Mes</InputLabel>
+                        <Select value={month} label="Mes" onChange={e => setMonth(e.target.value)}>
+                            {months.map((m, i) => <MenuItem key={m} value={i}>{m}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                </Paper>
 
-            <Grid container spacing={2} mb={4}>
-                <Grid item xs={6} md={3}><Card><CardContent><Typography>Ingresos por Cuotas</Typography><Typography variant="h5">${filteredData.ingresosCuotas.toFixed(2)}</Typography></CardContent></Card></Grid>
-                <Grid item xs={6} md={3}><Card><CardContent><Typography>Ingresos por Ventas</Typography><Typography variant="h5">${filteredData.ingresosVentas.toFixed(2)}</Typography></CardContent></Card></Grid>
-                <Grid item xs={6} md={3}><Card><CardContent><Typography>Gastos Totales</Typography><Typography variant="h5" color="error">${filteredData.totalGastos.toFixed(2)}</Typography></CardContent></Card></Grid>
-                <Grid item xs={6} md={3}><Card><CardContent><Typography>Ganancia Neta</Typography><Typography variant="h5" color={filteredData.gananciaNeta >= 0 ? 'success.main' : 'error'}>${filteredData.gananciaNeta.toFixed(2)}</Typography></CardContent></Card></Grid>
-            </Grid>
-            
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={6}>
-                    <Typography variant="h6">Resumen Gráfico</Typography>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={[{ name: 'Resumen', Ingresos: filteredData.totalIngresos, Gastos: filteredData.totalGastos }]}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                            <Legend />
-                            <Bar dataKey="Ingresos" fill="green" />
-                            <Bar dataKey="Gastos" fill="red" />
-                        </BarChart>
-                    </ResponsiveContainer>
+                <Grid container spacing={2} mb={4}>
+                    <Grid item xs={6} md={3}><Card><CardContent><Typography>Ingresos por Cuotas</Typography><Typography variant="h5">${filteredData.ingresosCuotas.toFixed(2)}</Typography></CardContent></Card></Grid>
+                    <Grid item xs={6} md={3}><Card><CardContent><Typography>Ingresos por Ventas</Typography><Typography variant="h5">${filteredData.ingresosVentas.toFixed(2)}</Typography></CardContent></Card></Grid>
+                    <Grid item xs={6} md={3}><Card><CardContent><Typography>Gastos Totales</Typography><Typography variant="h5" color="error">${filteredData.totalGastos.toFixed(2)}</Typography></CardContent></Card></Grid>
+                    <Grid item xs={6} md={3}><Card><CardContent><Typography>Ganancia Neta</Typography><Typography variant="h5" color={filteredData.gananciaNeta >= 0 ? 'success.main' : 'error'}>${filteredData.gananciaNeta.toFixed(2)}</Typography></CardContent></Card></Grid>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                    <Typography variant="h6">Registrar Nuevo Gasto</Typography>
-                    <Paper component="form" onSubmit={handleAddGasto} sx={{p: 2}}>
-                        <TextField name="concepto" label="Concepto" fullWidth required margin="normal" />
-                        <TextField name="monto" label="Monto" type="number" inputProps={{step: "0.01"}} fullWidth required margin="normal" />
-                        <TextField name="fecha" type="date" fullWidth required margin="normal" defaultValue={today.toISOString().split('T')[0]}/>
-                        <FormControl fullWidth margin="normal">
-                            <InputLabel>Categoría</InputLabel>
-                            <Select name="categoria" label="Categoría" defaultValue="Otros">
-                                <MenuItem value="Alquiler">Alquiler</MenuItem>
-                                <MenuItem value="Servicios">Servicios</MenuItem>
-                                <MenuItem value="Sueldos">Sueldos</MenuItem>
-                                <MenuItem value="Equipamiento">Equipamiento</MenuItem>
-                                <MenuItem value="Marketing">Marketing</MenuItem>
-                                <MenuItem value="Otros">Otros</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <Button type="submit" variant="contained" sx={{mt: 2}}>Registrar Gasto</Button>
-                    </Paper>
+                
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="h6">Resumen Gráfico</Typography>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={[{ name: 'Resumen', Ingresos: filteredData.totalIngresos, Gastos: filteredData.totalGastos }]}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                                <Legend />
+                                <Bar dataKey="Ingresos" fill="green" />
+                                <Bar dataKey="Gastos" fill="red" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="h6">Registrar Nuevo Gasto</Typography>
+                        <Paper component="form" onSubmit={handleAddGasto} sx={{p: 2}}>
+                            <TextField name="concepto" label="Concepto" fullWidth required margin="normal" />
+                            <TextField name="monto" label="Monto" type="number" inputProps={{step: "0.01"}} fullWidth required margin="normal" />
+                            <TextField name="fecha" type="date" fullWidth required margin="normal" defaultValue={today.toISOString().split('T')[0]}/>
+                            <FormControl fullWidth margin="normal">
+                                <InputLabel>Categoría</InputLabel>
+                                <Select name="categoria" label="Categoría" defaultValue="Otros">
+                                    <MenuItem value="Alquiler">Alquiler</MenuItem>
+                                    <MenuItem value="Servicios">Servicios</MenuItem>
+                                    <MenuItem value="Sueldos">Sueldos</MenuItem>
+                                    <MenuItem value="Equipamiento">Equipamiento</MenuItem>
+                                    <MenuItem value="Marketing">Marketing</MenuItem>
+                                    <MenuItem value="Otros">Otros</MenuItem>
+                                </Select>
+                            </FormControl>
+                            <Button type="submit" variant="contained" sx={{mt: 2}}>Registrar Gasto</Button>
+                        </Paper>
+                    </Grid>
                 </Grid>
-            </Grid>
-        </div>
+            </Container>
+        </Box>
     );
 };
 

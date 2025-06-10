@@ -5,7 +5,7 @@ import apiClient from '../api';
 import { 
     Button, TextField, Dialog, DialogActions, DialogContent, 
     DialogTitle, Card, CardContent, CardActions, Typography, 
-    Grid, Avatar, Box, Select, MenuItem, InputLabel, FormControl
+    Grid, Avatar, Box, Select, MenuItem, InputLabel, FormControl, Container
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -152,71 +152,77 @@ const SociosPage = () => {
     };
 
     return (
-        <div>
-            <Typography variant="h4" gutterBottom>Gestión de Socios</Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <TextField 
-                    label="Buscar por nombre o CI..." 
-                    variant="outlined" 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    sx={{ width: '40%' }}
-                />
-                <Button variant="contained" startIcon={<AddIcon />} onClick={() => { setEditingSocio(null); setFormOpen(true); }}>
-                    Agregar Socio
-                </Button>
-            </Box>
+        <Box sx={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            py: { xs: 2, md: 4 },
+        }}>
+            <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 4, lg: 8 } }}>
+                <Typography variant="h4" gutterBottom>Gestión de Socios</Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                    <TextField 
+                        label="Buscar por nombre o CI..." 
+                        variant="outlined" 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        sx={{ width: '40%' }}
+                    />
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => { setEditingSocio(null); setFormOpen(true); }}>
+                        Agregar Socio
+                    </Button>
+                </Box>
 
-            <Grid container spacing={2}>
-                {socios && socios.length > 0 ? (
-                    socios.map(socio => (
-                        <Grid item xs={12} md={6} lg={4} key={socio.ci}>
-                            <Card onClick={() => setViewingSocio(socio)} sx={{ cursor: 'pointer', height: '100%' }}>
-                                <CardContent>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                        <Avatar src={socio.foto} sx={{ width: 60, height: 60, mr: 2 }} />
-                                        <Box>
-                                            <Typography variant="h6">{socio.nombre}</Typography>
-                                            <Typography variant="body2" color="textSecondary">CI: {socio.ci}</Typography>
+                <Grid container spacing={2}>
+                    {socios && socios.length > 0 ? (
+                        socios.map(socio => (
+                            <Grid item xs={12} md={6} lg={4} key={socio.ci}>
+                                <Card onClick={() => setViewingSocio(socio)} sx={{ cursor: 'pointer', height: '100%' }}>
+                                    <CardContent>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                            <Avatar src={socio.foto} sx={{ width: 60, height: 60, mr: 2 }} />
+                                            <Box>
+                                                <Typography variant="h6">{socio.nombre}</Typography>
+                                                <Typography variant="body2" color="textSecondary">CI: {socio.ci}</Typography>
+                                            </Box>
                                         </Box>
-                                    </Box>
-                                    <Typography variant="body1">Celular: {socio.celular || 'N/A'}</Typography>
-                                    <Typography variant="body1">Cuota: {socio.tipo_cuota || 'N/A'}</Typography>
-                                </CardContent>
-                                <CardActions>
-                                    <Button size="small" onClick={(e) => { e.stopPropagation(); setEditingSocio(socio); setFormOpen(true); }}>Editar</Button>
-                                    <Button size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteSocio(socio.ci); }}>Eliminar</Button>
-                                </CardActions>
-                            </Card>
+                                        <Typography variant="body1">Celular: {socio.celular || 'N/A'}</Typography>
+                                        <Typography variant="body1">Cuota: {socio.tipo_cuota || 'N/A'}</Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        <Button size="small" onClick={(e) => { e.stopPropagation(); setEditingSocio(socio); setFormOpen(true); }}>Editar</Button>
+                                        <Button size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteSocio(socio.ci); }}>Eliminar</Button>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        ))
+                    ) : (
+                        <Grid item xs={12}>
+                            <Typography sx={{ textAlign: 'center', mt: 4 }}>
+                                Cargando socios o no se encontraron resultados...
+                            </Typography>
                         </Grid>
-                    ))
-                ) : (
-                    <Grid item xs={12}>
-                        <Typography sx={{ textAlign: 'center', mt: 4 }}>
-                            Cargando socios o no se encontraron resultados...
-                        </Typography>
-                    </Grid>
-                )}
-            </Grid>
+                    )}
+                </Grid>
 
-            {/* Formulario para EDITAR/CREAR */}
-            <SocioForm 
-                open={formOpen} 
-                onClose={() => setFormOpen(false)} 
-                onSave={handleSaveSocio} 
-                socio={editingSocio} 
-            />
-
-            {/* Formulario para VER en modo solo lectura */}
-            {viewingSocio && (
+                {/* Formulario para EDITAR/CREAR */}
                 <SocioForm 
-                    open={!!viewingSocio}
-                    onClose={() => setViewingSocio(null)}
-                    socio={viewingSocio}
-                    isViewOnly={true}
+                    open={formOpen} 
+                    onClose={() => setFormOpen(false)} 
+                    onSave={handleSaveSocio} 
+                    socio={editingSocio} 
                 />
-            )}
-        </div>
+
+                {/* Formulario para VER en modo solo lectura */}
+                {viewingSocio && (
+                    <SocioForm 
+                        open={!!viewingSocio}
+                        onClose={() => setViewingSocio(null)}
+                        socio={viewingSocio}
+                        isViewOnly={true}
+                    />
+                )}
+            </Container>
+        </Box>
     );
 };
 

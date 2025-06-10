@@ -589,47 +589,53 @@ const InventarioPage = () => {
     };
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Paper sx={{ p: 3, width: '100%' }}>
-                <Typography variant="h4" gutterBottom>
-                    Gestión de Inventario y Ventas
-                </Typography>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
-                    <Tabs value={tabValue} onChange={handleTabChange}>
-                        <Tab label="Stock Semanal" />
-                        <Tab label="Registrar Venta" />
-                        <Tab label="Lista de Productos" />
-                        <Tab label="Historial de Ventas" />
-                    </Tabs>
-                    {tabValue === 2 && (
-                        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenEditForm(null)} sx={{ mb: 1 }}>
-                            Agregar Producto
-                        </Button>
-                    )}
-                </Box>
+        <Box sx={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            py: { xs: 2, md: 4 },
+        }}>
+            <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 4, lg: 8 } }}>
+                <Paper sx={{ p: 3, width: '100%' }}>
+                    <Typography variant="h4" gutterBottom>
+                        Gestión de Inventario y Ventas
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                        <Tabs value={tabValue} onChange={handleTabChange}>
+                            <Tab label="Stock Semanal" />
+                            <Tab label="Registrar Venta" />
+                            <Tab label="Lista de Productos" />
+                            <Tab label="Historial de Ventas" />
+                        </Tabs>
+                        {tabValue === 2 && (
+                            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenEditForm(null)} sx={{ mb: 1 }}>
+                                Agregar Producto
+                            </Button>
+                        )}
+                    </Box>
 
-                <TabPanel value={tabValue} index={0}>
-                    <StockSemanalComponent productos={productos} ventas={ventas} />
-                </TabPanel>
-                <TabPanel value={tabValue} index={1}>
-                    <VentaFormComponent productos={productos} onVentaSuccess={fetchAllData} />
-                </TabPanel>
-                <TabPanel value={tabValue} index={2}>
-                    <ProductListComponent onProductUpdate={fetchAllData} onEdit={handleOpenEditForm} />
-                </TabPanel>
-                <TabPanel value={tabValue} index={3}>
-                    <Typography>Historial de ventas (en desarrollo)</Typography>
-                </TabPanel>
+                    <TabPanel value={tabValue} index={0}>
+                        <StockSemanalComponent productos={productos} ventas={ventas} />
+                    </TabPanel>
+                    <TabPanel value={tabValue} index={1}>
+                        <VentaFormComponent productos={productos} onVentaSuccess={fetchAllData} />
+                    </TabPanel>
+                    <TabPanel value={tabValue} index={2}>
+                        <ProductListComponent onProductUpdate={fetchAllData} onEdit={handleOpenEditForm} />
+                    </TabPanel>
+                    <TabPanel value={tabValue} index={3}>
+                        <Typography>Historial de ventas (en desarrollo)</Typography>
+                    </TabPanel>
 
-                <ProductForm 
-                    open={formOpen} 
-                    onClose={() => setFormOpen(false)} 
-                    onSave={handleSave} 
-                    product={editingProduct} 
-                />
-            </Paper>
-        </Container>
+                    <ProductForm 
+                        open={formOpen} 
+                        onClose={() => setFormOpen(false)} 
+                        onSave={handleSave} 
+                        product={editingProduct} 
+                    />
+                </Paper>
+            </Container>
+        </Box>
     );
 };
 

@@ -1,7 +1,7 @@
 // src/pages/AdminPage.jsx
 import React, { useState } from 'react';
 import apiClient from '../api';
-import { Button, Box, Typography, Paper, Grid, Alert } from '@mui/material';
+import { Button, Box, Typography, Paper, Grid, Alert, Container } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 // Componente reutilizable para la importación
@@ -109,32 +109,38 @@ const AdminPage = () => {
     };
 
     return (
-        <div>
-            <Typography variant="h4" gutterBottom>Administración del Sistema</Typography>
-            
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={6}>
-                    <Typography variant="h5" gutterBottom>⬆️ Importar Datos</Typography>
-                    <CsvImporter title="Importar Socios" endpoint="socios" />
-                    <CsvImporter title="Importar Pagos" endpoint="pagos" />
-                    <CsvImporter title="Importar Inventario" endpoint="productos" />
-                </Grid>
+        <Box sx={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            py: { xs: 2, md: 4 },
+        }}>
+            <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 4, lg: 8 } }}>
+                <Typography variant="h4" gutterBottom>Administración del Sistema</Typography>
                 
-                <Grid item xs={12} md={6}>
-                    <Typography variant="h5" gutterBottom>⬇️ Exportar Datos</Typography>
-                    <Paper sx={{p: 2}}>
-                        <Typography variant="h6" gutterBottom>Exportar a CSV</Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <Button variant="outlined" onClick={() => handleExport('socios', 'socios.csv')}>Exportar Socios</Button>
-                            <Button variant="outlined" onClick={() => handleExport('pagos', 'pagos.csv')}>Exportar Pagos</Button>
-                            <Button variant="outlined" onClick={() => handleExport('productos', 'inventario.csv')}>Exportar Inventario</Button>
-                            <Button variant="outlined" onClick={() => handleExport('ventas', 'ventas.csv')}>Exportar Ventas</Button>
-                            <Button variant="outlined" onClick={() => handleExport('gastos', 'gastos.csv')}>Exportar Gastos</Button>
-                        </Box>
-                    </Paper>
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="h5" gutterBottom>⬆️ Importar Datos</Typography>
+                        <CsvImporter title="Importar Socios" endpoint="socios" />
+                        <CsvImporter title="Importar Pagos" endpoint="pagos" />
+                        <CsvImporter title="Importar Inventario" endpoint="productos" />
+                    </Grid>
+                    
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="h5" gutterBottom>⬇️ Exportar Datos</Typography>
+                        <Paper sx={{p: 2}}>
+                            <Typography variant="h6" gutterBottom>Exportar a CSV</Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Button variant="outlined" onClick={() => handleExport('socios', 'socios.csv')}>Exportar Socios</Button>
+                                <Button variant="outlined" onClick={() => handleExport('pagos', 'pagos.csv')}>Exportar Pagos</Button>
+                                <Button variant="outlined" onClick={() => handleExport('productos', 'inventario.csv')}>Exportar Inventario</Button>
+                                <Button variant="outlined" onClick={() => handleExport('ventas', 'ventas.csv')}>Exportar Ventas</Button>
+                                <Button variant="outlined" onClick={() => handleExport('gastos', 'gastos.csv')}>Exportar Gastos</Button>
+                            </Box>
+                        </Paper>
+                    </Grid>
                 </Grid>
-            </Grid>
-        </div>
+            </Container>
+        </Box>
     );
 };
 
