@@ -1,9 +1,13 @@
 // src/api.js
 import axios from 'axios';
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const apiClient = axios.create({
-  // Esta es la dirección donde está corriendo tu backend de Django
-  baseURL: 'http://127.0.0.1:8000/api/',
+  // Usa la URL de producción o desarrollo según el entorno
+  baseURL: isDevelopment 
+    ? 'http://127.0.0.1:8000/api/'
+    : 'https://thebadgersadmin.onrender.com/api/',
   headers: {
     'Content-Type': 'application/json',
   },

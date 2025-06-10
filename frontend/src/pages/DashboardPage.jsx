@@ -1,10 +1,11 @@
 // src/pages/DashboardPage.jsx
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, CardContent, Typography, Box } from '@mui/material';
+import { Grid, Card, CardContent, Typography, Box, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, IconButton } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import PeopleIcon from '@mui/icons-material/People'; // Iconos para un look más profesional
 import InventoryIcon from '@mui/icons-material/Inventory';
 import PaymentIcon from '@mui/icons-material/Payment';
+import CloseIcon from '@mui/icons-material/Close';
 import apiClient from '../api';
 
 // Lista de socios que no pagan mensualidad
@@ -12,7 +13,8 @@ const SOCIOS_SIN_PAGO = [
     'Gonzalo Fernandez',
     'Federico Soriano',
     'Mariana Peralta',
-    'Guillermo Viera'
+    'Guillermo Viera',
+    'Andrea Lostorto'
 ];
 
 const COLORS = ['#4CAF50', '#FFC107'];
@@ -25,6 +27,8 @@ const DashboardPage = () => {
     });
     const [stockData, setStockData] = useState([]);
     const [pagosData, setPagosData] = useState([]);
+    const [sociosPendientes, setSociosPendientes] = useState([]);
+    const [openDialog, setOpenDialog] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -37,8 +41,12 @@ const DashboardPage = () => {
                 ]);
                 
                 // Filtrar socios activos (excluyendo socios sin pago)
-                const sociosActivos = (sociosRes.data.results ? sociosRes.data.results : sociosRes.data)
-                    .filter(socio => !SOCIOS_SIN_PAGO.includes(socio.nombre));
+                const todosLosSocios = sociosRes.data.results ? sociosRes.data.results : sociosRes.data;
+                console.log('Total de socios:', todosLosSocios.length);
+                
+                const sociosActivos = todosLosSocios.filter(socio => !SOCIOS_SIN_PAGO.includes(socio.nombre));
+                console.log('Socios activos (sin socios sin pago):', sociosActivos.length);
+                console.log('Socios sin pago:', SOCIOS_SIN_PAGO);
 
                 // Obtener el mes y año actual
                 const now = new Date();
@@ -50,10 +58,15 @@ const DashboardPage = () => {
                 const pagosMesActual = pagos.filter(p => 
                     p.mes === mesActual && p.año === añoActual
                 );
+                console.log('Pagos del mes actual:', pagosMesActual.length);
 
                 // Calcular estadísticas de pagos
                 const sociosPagados = pagosMesActual.map(p => p.socio);
-                const sociosPendientes = sociosActivos.filter(s => !sociosPagados.includes(s.ci));
+                console.log('Socios que han pagado:', sociosPagados.length);
+
+                // Filtrar socios pendientes (excluyendo socios sin pago)
+                const sociosPendientesList = sociosActivos.filter(s => !sociosPagados.includes(s.ci));
+                setSociosPendientes(sociosPendientesList);
 
                 // Actualizar estadísticas
                 setStats({
@@ -61,14 +74,14 @@ const DashboardPage = () => {
                     socios_activos: sociosActivos.length,
                     pagos_mes: {
                         pagados: sociosPagados.length,
-                        pendientes: sociosPendientes.length
+                        pendientes: sociosPendientesList.length
                     }
                 });
 
                 // Datos para el gráfico de pagos
                 setPagosData([
                     { name: 'Pagados', value: sociosPagados.length },
-                    { name: 'Pendientes', value: sociosPendientes.length }
+                    { name: 'Pendientes', value: sociosPendientesList.length }
                 ]);
 
                 // Procesar datos para el gráfico de stock
@@ -84,6 +97,14 @@ const DashboardPage = () => {
         };
         fetchData();
     }, []);
+
+    const handleOpenDialog = () => {
+        setOpenDialog(true);
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+    };
 
     return (
         <div>
@@ -130,12 +151,12 @@ const DashboardPage = () => {
                                         Pagados
                                     </Typography>
                                 </Box>
-                                <Box>
+                                <Box sx={{ cursor: 'pointer' }} onClick={handleOpenDialog}>
                                     <Typography variant="h6" color="warning.main">
                                         {stats.pagos_mes.pendientes}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        Pendientes
+                                        Pendientes (click para ver)
                                     </Typography>
                                 </Box>
                             </Box>
@@ -182,6 +203,40 @@ const DashboardPage = () => {
                     </ResponsiveContainer>
                 </Grid>
             </Grid>
+
+            <Dialog 
+                open={openDialog} 
+                onClose={handleCloseDialog}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>
+                    Socios Pendientes de Pago
+                    <IconButton
+                        aria-label="close"
+                        onClick={handleCloseDialog}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <List>
+                        {sociosPendientes.map((socio) => (
+                            <ListItem key={socio.ci}>
+                                <ListItemText 
+                                    primary={socio.nombre}
+                                    secondary={`CI: ${socio.ci}`}
+                                />
+                            </ListItem>
+                        ))}
+                    </List>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
