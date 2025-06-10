@@ -1,0 +1,17 @@
+# Archivo de configuración para Netlify
+
+[build]
+  # Comando para construir tu sitio de Vite
+  command = "npm run build"
+
+  # Directorio que se debe publicar. Vite lo crea en 'dist'.
+  publish = "frontend/dist/"
+
+  # Directorio base donde está el código de tu frontend
+  base = "frontend/"
+
+# Regla de redirección para que las rutas de React (React Router) funcionen
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
