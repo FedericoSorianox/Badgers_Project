@@ -154,11 +154,39 @@ const SociosPage = () => {
     return (
         <Box sx={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-            py: { xs: 2, md: 4 },
+            width: '100%',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            py: { xs: 3, md: 6 },
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
         }}>
-            <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 4, lg: 8 } }}>
-                <Typography variant="h4" gutterBottom>Gestión de Socios</Typography>
+            <Container maxWidth={false} sx={{
+                px: { xs: 2, sm: 3, md: 4 },
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
+                <Typography
+                    variant="h2"
+                    gutterBottom
+                    align="center"
+                    sx={{
+                        fontWeight: 900,
+                        mb: 8,
+                        background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                        backgroundClip: 'text',
+                        textFillColor: 'transparent',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        fontSize: { xs: '2.5rem', md: '3.5rem' },
+                    }}
+                >
+                    Gestión de Socios
+                </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                     <TextField 
                         label="Buscar por nombre o CI..." 

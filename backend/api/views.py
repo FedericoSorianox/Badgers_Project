@@ -113,6 +113,7 @@ class PagoViewSet(viewsets.ModelViewSet):
                 success_count += 1
             except Exception as e:
                 error_count += 1
+                pago_id = f"{row.get('ci', 'N/A')}_{row.get('mes', 'N/A')}_{row.get('año', 'N/A')}"
                 errors.append(f"Fila con ID {pago_id}: {str(e)}")
 
         return Response({

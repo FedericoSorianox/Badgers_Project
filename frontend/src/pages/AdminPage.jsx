@@ -1,7 +1,7 @@
 // src/pages/AdminPage.jsx
 import React, { useState } from 'react';
 import apiClient from '../api';
-import { Button, Box, Typography, Paper, Grid, Alert, Container } from '@mui/material';
+import { Button, Box, Typography, Paper, Grid, Alert, Container, CircularProgress } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 // Componente reutilizable para la importación
@@ -9,6 +9,7 @@ const CsvImporter = ({ title, endpoint }) => {
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
@@ -24,7 +25,7 @@ const CsvImporter = ({ title, endpoint }) => {
 
         const formData = new FormData();
         formData.append('file', file);
-
+        setLoading(true);
         try {
             const response = await apiClient.post(`/${endpoint}/import_csv/`, formData, {
                 headers: {
@@ -41,6 +42,8 @@ const CsvImporter = ({ title, endpoint }) => {
             setError(err.response?.data?.error || "Ocurrió un error durante la importación.");
             setMessage('');
             console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -48,14 +51,15 @@ const CsvImporter = ({ title, endpoint }) => {
         <Paper sx={{ p: 2, mb: 2 }}>
             <Typography variant="h6">{title}</Typography>
             <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Button component="label" variant="outlined" startIcon={<CloudUploadIcon />}>
+                <Button component="label" variant="outlined" startIcon={<CloudUploadIcon />} disabled={loading}>
                     Seleccionar CSV
                     <input type="file" accept=".csv" hidden onChange={handleFileChange} />
                 </Button>
                 {file && <Typography variant="body2">{file.name}</Typography>}
-                <Button variant="contained" onClick={handleImport} disabled={!file}>
+                <Button variant="contained" onClick={handleImport} disabled={!file || loading}>
                     Importar
                 </Button>
+                {loading && <CircularProgress size={28} sx={{ ml: 2 }} />}
             </Box>
             {message && <Alert severity="success" sx={{ mt: 2 }}>{message}</Alert>}
             {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
@@ -111,11 +115,39 @@ const AdminPage = () => {
     return (
         <Box sx={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-            py: { xs: 2, md: 4 },
+            width: '100%',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            py: { xs: 3, md: 6 },
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
         }}>
-            <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 4, lg: 8 } }}>
-                <Typography variant="h4" gutterBottom>Administración del Sistema</Typography>
+            <Container maxWidth={false} sx={{
+                px: { xs: 2, sm: 3, md: 4 },
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
+                <Typography
+                    variant="h2"
+                    gutterBottom
+                    align="center"
+                    sx={{
+                        fontWeight: 900,
+                        mb: 8,
+                        background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                        backgroundClip: 'text',
+                        textFillColor: 'transparent',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        fontSize: { xs: '2.5rem', md: '3.5rem' },
+                    }}
+                >
+                    Administración del Sistema
+                </Typography>
                 
                 <Grid container spacing={4}>
                     <Grid item xs={12} md={6}>

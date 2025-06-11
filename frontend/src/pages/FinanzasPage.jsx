@@ -3,14 +3,20 @@ import React, { useState, useEffect, useMemo } from 'react';
 import apiClient from '../api';
 import { 
     Grid, Card, CardContent, Typography, TextField, Select, MenuItem, 
-    FormControl, InputLabel, Paper, Button, Box, Container 
+    FormControl, InputLabel, Paper, Button, Box, Container,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    IconButton, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const FinanzasPage = () => {
     const [pagos, setPagos] = useState([]);
     const [ventas, setVentas] = useState([]);
     const [gastos, setGastos] = useState([]);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [selectedRecord, setSelectedRecord] = useState(null);
+    const [filterType, setFilterType] = useState('todos');
     
     const today = new Date();
     const [year, setYear] = useState(today.getFullYear());
@@ -83,14 +89,84 @@ const FinanzasPage = () => {
     const years = Array.from({length: 10}, (_, i) => today.getFullYear() - i);
     const months = ["Todos", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
+    const handleDeleteRecord = async (type, id) => {
+        try {
+            await apiClient.delete(`/${type}/${id}/`);
+            if (type === 'pagos') {
+                setPagos(prev => prev.filter(p => p.id !== id));
+            } else if (type === 'ventas') {
+                setVentas(prev => prev.filter(v => v.id !== id));
+            } else if (type === 'gastos') {
+                setGastos(prev => prev.filter(g => g.id !== id));
+            }
+            setDeleteDialogOpen(false);
+            setSelectedRecord(null);
+        } catch (error) {
+            console.error(`Error deleting ${type}:`, error);
+        }
+    };
+
+    const openDeleteDialog = (record, type) => {
+        setSelectedRecord({ ...record, type });
+        setDeleteDialogOpen(true);
+    };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    const getFilteredRecords = () => {
+        const allRecords = [...pagos, ...ventas, ...gastos];
+        if (filterType === 'todos') return allRecords;
+        
+        return allRecords.filter(record => {
+            if (filterType === 'pagos') return 'fecha_pago' in record;
+            if (filterType === 'ventas') return 'fecha_venta' in record;
+            if (filterType === 'gastos') return 'fecha' in record;
+            return true;
+        });
+    };
+
     return (
         <Box sx={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-            py: { xs: 2, md: 4 },
+            width: '100%',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            py: { xs: 3, md: 6 },
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
         }}>
-            <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 4, lg: 8 } }}>
-                <Typography variant="h4" gutterBottom>Gestión de Finanzas</Typography>
+            <Container maxWidth={false} sx={{
+                px: { xs: 2, sm: 3, md: 4 },
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
+                <Typography
+                    variant="h2"
+                    gutterBottom
+                    align="center"
+                    sx={{
+                        fontWeight: 900,
+                        mb: 8,
+                        background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                        backgroundClip: 'text',
+                        textFillColor: 'transparent',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        fontSize: { xs: '2.5rem', md: '3.5rem' },
+                    }}
+                >
+                    Gestión de Finanzas
+                </Typography>
                 <Paper sx={{ p: 2, mb: 3, display: 'flex', gap: 2 }}>
                     <FormControl>
                         <InputLabel>Año</InputLabel>
@@ -149,6 +225,91 @@ const FinanzasPage = () => {
                         </Paper>
                     </Grid>
                 </Grid>
+
+                {/* New Financial History Section */}
+                <Box sx={{ mt: 4, width: '100%' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="h5">
+                            Historial Financiero
+                        </Typography>
+                        <FormControl sx={{ minWidth: 200 }}>
+                            <InputLabel>Filtrar por tipo</InputLabel>
+                            <Select
+                                value={filterType}
+                                label="Filtrar por tipo"
+                                onChange={(e) => setFilterType(e.target.value)}
+                            >
+                                <MenuItem value="todos">Todos los registros</MenuItem>
+                                <MenuItem value="pagos">Pagos</MenuItem>
+                                <MenuItem value="ventas">Ventas</MenuItem>
+                                <MenuItem value="gastos">Gastos</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    <TableContainer component={Paper}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Fecha</TableCell>
+                                    <TableCell>Tipo</TableCell>
+                                    <TableCell>Concepto</TableCell>
+                                    <TableCell>Monto</TableCell>
+                                    <TableCell>Acciones</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {getFilteredRecords()
+                                    .sort((a, b) => new Date(b.fecha_pago || b.fecha_venta || b.fecha) - new Date(a.fecha_pago || a.fecha_venta || a.fecha))
+                                    .map((record) => {
+                                        const isPago = 'fecha_pago' in record;
+                                        const isVenta = 'fecha_venta' in record;
+                                        const type = isPago ? 'pagos' : isVenta ? 'ventas' : 'gastos';
+                                        const date = isPago ? record.fecha_pago : isVenta ? record.fecha_venta : record.fecha;
+                                        const monto = isPago ? record.monto : isVenta ? record.total_venta : record.monto;
+                                        const concepto = isPago ? 'Pago de Cuota' : isVenta ? 'Venta' : record.concepto;
+
+                                        return (
+                                            <TableRow key={`${type}-${record.id}`}>
+                                                <TableCell>{formatDate(date)}</TableCell>
+                                                <TableCell>{type.charAt(0).toUpperCase() + type.slice(1)}</TableCell>
+                                                <TableCell>{concepto}</TableCell>
+                                                <TableCell>${parseFloat(monto).toFixed(2)}</TableCell>
+                                                <TableCell>
+                                                    <IconButton 
+                                                        onClick={() => openDeleteDialog(record, type)}
+                                                        color="error"
+                                                    >
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+
+                {/* Delete Confirmation Dialog */}
+                <Dialog
+                    open={deleteDialogOpen}
+                    onClose={() => setDeleteDialogOpen(false)}
+                >
+                    <DialogTitle>Confirmar Eliminación</DialogTitle>
+                    <DialogContent>
+                        ¿Está seguro que desea eliminar este registro?
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
+                        <Button 
+                            onClick={() => selectedRecord && handleDeleteRecord(selectedRecord.type, selectedRecord.id)}
+                            color="error"
+                            variant="contained"
+                        >
+                            Eliminar
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Container>
         </Box>
     );
