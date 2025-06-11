@@ -33,7 +33,11 @@ SECRET_KEY = 'django-insecure-hl!998$#)*zpak-)bamp+4$#2a1mh77zyf!$ar+gii6(8*ose4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'thebadgersbackend.onrender.com',
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
