@@ -2,7 +2,7 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import SocioViewSet, PagoViewSet, ProductoViewSet, VentaViewSet, GastoViewSet
+from .views import SocioViewSet, PagoViewSet, ProductoViewSet, VentaViewSet, GastoViewSet, eliminar_socios_sin_ci
 from .views import DashboardStatsView
 
 # --- PASO 1: Creamos el router pero SIN registrar 'socios' ---
@@ -44,6 +44,5 @@ urlpatterns = [
     # Usamos <str:ci> que permite cualquier caracter, incluyendo puntos y guiones.
     path('socios/<str:ci>/', socio_detail, name='socio-detail'),
     path('dashboard-stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
-    
-   
+    path('socios/limpiar_sin_ci/', eliminar_socios_sin_ci, name='eliminar-socios-sin-ci'),
 ]
