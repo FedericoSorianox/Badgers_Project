@@ -1,6 +1,6 @@
 // src/pages/DashboardPage.jsx
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, CardContent, Typography, Box, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, IconButton, Container } from '@mui/material';
+import { Grid, Card, CardContent, Typography, Box, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, IconButton, Container, useTheme, useMediaQuery } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import PeopleIcon from '@mui/icons-material/People'; // Iconos para un look más profesional
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -20,6 +20,8 @@ const SOCIOS_SIN_PAGO = [
 const COLORS = ['#4CAF50', '#FFC107'];
 
 const DashboardPage = () => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [stats, setStats] = useState({ 
         socios_activos: 0, 
         productos_en_inventario: 0,
@@ -109,73 +111,147 @@ const DashboardPage = () => {
     return (
         <Box sx={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-            py: { xs: 2, md: 4 },
+            width: '100%',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            py: { xs: 3, md: 6 },
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
         }}>
-            <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 4, lg: 8 } }}>
-                <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 700, mb: 4 }}>
+            <Container 
+                maxWidth={false} 
+                sx={{ 
+                    px: { xs: 2, sm: 3, md: 4 },
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <Typography 
+                    variant="h2" 
+                    gutterBottom 
+                    align="center" 
+                    sx={{ 
+                        fontWeight: 900,
+                        mb: 8,
+                        background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                        backgroundClip: 'text',
+                        textFillColor: 'transparent',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        fontSize: { xs: '2.5rem', md: '3.5rem' },
+                    }}
+                >
                     Dashboard Principal
                 </Typography>
-                <Grid container spacing={3} mb={4}>
-                    <Grid item xs={12} sm={6} md={4}>
-                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-                            <CardContent sx={{ width: '100%' }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Typography variant="h6">Socios Activos</Typography>
-                                    <PeopleIcon color="primary" />
+                <Grid container spacing={6} mb={8} justifyContent="center" alignItems="center">
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Card sx={{
+                            height: '100%',
+                            borderRadius: 6,
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                            '&:hover': {
+                                transform: 'translateY(-6px)',
+                                boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
+                            },
+                            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                            boxShadow: '0 6px 24px rgba(0,0,0,0.08)',
+                        }}>
+                            <CardContent sx={{ p: 4 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 700 }}>Socios Activos</Typography>
+                                    <PeopleIcon sx={{ color: '#2196F3', fontSize: 40 }} />
                                 </Box>
-                                <Typography variant="h4" align="center">{stats.socios_activos}</Typography>
-                                <Typography variant="body2" color="text.secondary" align="center">
+                                <Typography variant="h2" align="center" sx={{ fontWeight: 800, color: '#2196F3' }}>
+                                    {stats.socios_activos}
+                                </Typography>
+                                <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 2 }}>
                                     (Excluyendo socios sin pago mensual)
                                 </Typography>
                             </CardContent>
                         </Card>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
-                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-                            <CardContent sx={{ width: '100%' }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Typography variant="h6">Productos en Inventario</Typography>
-                                    <InventoryIcon color="primary" />
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Card sx={{
+                            height: '100%',
+                            borderRadius: 6,
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                            '&:hover': {
+                                transform: 'translateY(-6px)',
+                                boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
+                            },
+                            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                            boxShadow: '0 6px 24px rgba(0,0,0,0.08)',
+                        }}>
+                            <CardContent sx={{ p: 4 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 700 }}>Productos en Inventario</Typography>
+                                    <InventoryIcon sx={{ color: '#4CAF50', fontSize: 40 }} />
                                 </Box>
-                                <Typography variant="h4" align="center">{stats.productos_en_inventario}</Typography>
+                                <Typography variant="h2" align="center" sx={{ fontWeight: 800, color: '#4CAF50' }}>
+                                    {stats.productos_en_inventario}
+                                </Typography>
                             </CardContent>
                         </Card>
                     </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
-                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-                            <CardContent sx={{ width: '100%' }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Typography variant="h6">Estado de Pagos del Mes</Typography>
-                                    <PaymentIcon color="primary" />
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Card sx={{
+                            height: '100%',
+                            borderRadius: 6,
+                            transition: 'transform 0.2s, box-shadow 0.2s',
+                            '&:hover': {
+                                transform: 'translateY(-6px)',
+                                boxShadow: '0 16px 32px rgba(0,0,0,0.12)',
+                            },
+                            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                            boxShadow: '0 6px 24px rgba(0,0,0,0.08)',
+                        }}>
+                            <CardContent sx={{ p: 4 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 700 }}>Estado de Pagos</Typography>
+                                    <PaymentIcon sx={{ color: '#FF9800', fontSize: 40 }} />
                                 </Box>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-around', mt: 3 }}>
                                     <Box>
-                                        <Typography variant="h6" color="success.main" align="center">
+                                        <Typography variant="h3" color="success.main" align="center" sx={{ fontWeight: 800 }}>
                                             {stats.pagos_mes.pagados}
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary" align="center">
+                                        <Typography variant="body1" color="text.secondary" align="center">
                                             Pagados
                                         </Typography>
                                     </Box>
                                     <Box sx={{ cursor: 'pointer' }} onClick={handleOpenDialog}>
-                                        <Typography variant="h6" color="warning.main" align="center">
+                                        <Typography variant="h3" color="warning.main" align="center" sx={{ fontWeight: 800 }}>
                                             {stats.pagos_mes.pendientes}
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary" align="center">
-                                            Pendientes (click para ver)
+                                        <Typography variant="body1" color="text.secondary" align="center">
+                                            Pendientes
                                         </Typography>
                                     </Box>
                                 </Box>
                             </CardContent>
                         </Card>
                     </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                        <Box sx={{ height: '100%' }} />
+                    </Grid>
                 </Grid>
-                <Grid container spacing={4}>
+                <Grid container spacing={6} justifyContent="center" alignItems="center">
                     <Grid item xs={12} md={6}>
-                        <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, p: { xs: 2, md: 3 }, boxShadow: 2 }}>
-                            <Typography variant="h5" gutterBottom align="center">Estado de Pagos del Mes</Typography>
-                            <ResponsiveContainer width="100%" height={300}>
+                        <Card sx={{
+                            borderRadius: 6,
+                            p: 4,
+                            height: '100%',
+                            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                            boxShadow: '0 6px 24px rgba(0,0,0,0.08)',
+                        }}>
+                            <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 700, mb: 5 }}>
+                                Estado de Pagos del Mes
+                            </Typography>
+                            <ResponsiveContainer width="100%" height={350}>
                                 <PieChart>
                                     <Pie
                                         data={pagosData}
@@ -183,7 +259,7 @@ const DashboardPage = () => {
                                         cy="50%"
                                         labelLine={false}
                                         label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                        outerRadius={80}
+                                        outerRadius={120}
                                         fill="#8884d8"
                                         dataKey="value"
                                     >
@@ -195,22 +271,30 @@ const DashboardPage = () => {
                                     <Legend />
                                 </PieChart>
                             </ResponsiveContainer>
-                        </Box>
+                        </Card>
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, p: { xs: 2, md: 3 }, boxShadow: 2 }}>
-                            <Typography variant="h5" gutterBottom align="center">Stock de Productos</Typography>
-                            <ResponsiveContainer width="100%" height={300}>
+                        <Card sx={{
+                            borderRadius: 6,
+                            p: 4,
+                            height: '100%',
+                            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                            boxShadow: '0 6px 24px rgba(0,0,0,0.08)',
+                        }}>
+                            <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 700, mb: 5 }}>
+                                Stock de Productos
+                            </Typography>
+                            <ResponsiveContainer width="100%" height={350}>
                                 <BarChart data={stockData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                                     <XAxis dataKey="nombre" />
                                     <YAxis />
                                     <Tooltip />
                                     <Legend />
-                                    <Bar dataKey="stock" fill="#8884d8" />
+                                    <Bar dataKey="stock" fill="#2196F3" radius={[6, 6, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
-                        </Box>
+                        </Card>
                     </Grid>
                 </Grid>
                 <Dialog 
@@ -218,27 +302,54 @@ const DashboardPage = () => {
                     onClose={handleCloseDialog}
                     maxWidth="sm"
                     fullWidth
+                    PaperProps={{
+                        sx: {
+                            borderRadius: 6,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                        }
+                    }}
                 >
-                    <DialogTitle>
-                        Socios Pendientes de Pago
+                    <DialogTitle sx={{ 
+                        borderBottom: '1px solid #f0f0f0',
+                        pb: 2,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            Socios Pendientes de Pago
+                        </Typography>
                         <IconButton
                             aria-label="close"
                             onClick={handleCloseDialog}
                             sx={{
-                                position: 'absolute',
-                                right: 8,
-                                top: 8,
+                                color: 'text.secondary',
+                                '&:hover': {
+                                    color: 'text.primary',
+                                }
                             }}
                         >
                             <CloseIcon />
                         </IconButton>
                     </DialogTitle>
-                    <DialogContent>
+                    <DialogContent sx={{ pt: 3 }}>
                         <List>
                             {sociosPendientes.map((socio) => (
-                                <ListItem key={socio.ci}>
+                                <ListItem 
+                                    key={socio.ci}
+                                    sx={{
+                                        borderBottom: '1px solid #f0f0f0',
+                                        '&:last-child': {
+                                            borderBottom: 'none'
+                                        }
+                                    }}
+                                >
                                     <ListItemText 
-                                        primary={socio.nombre}
+                                        primary={
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                                {socio.nombre}
+                                            </Typography>
+                                        }
                                         secondary={`CI: ${socio.ci}`}
                                     />
                                 </ListItem>
