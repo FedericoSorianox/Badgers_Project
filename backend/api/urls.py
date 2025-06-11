@@ -38,12 +38,12 @@ urlpatterns = [
 
     # Agregamos nuestras URLs de Socios personalizadas
     path('socios/', socio_list, name='socio-list'),
-    
+     # La URL para la acción de importar
+    path('socios/import_csv/', socio_import_csv, name='socio-import-csv'),
     # ¡LA LÍNEA CLAVE!
     # Usamos <str:ci> que permite cualquier caracter, incluyendo puntos y guiones.
     path('socios/<str:ci>/', socio_detail, name='socio-detail'),
     path('dashboard-stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
     
-    # La URL para la acción de importar
-    path('socios/import_csv/', socio_import_csv, name='socio-import-csv'),
+   
 ]
