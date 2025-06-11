@@ -2,7 +2,7 @@
 import csv
 import io
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from rest_framework import viewsets, status, filters 
@@ -180,4 +180,10 @@ class DashboardStatsView(APIView):
             'socios_activos': active_socios_count,
             'productos_en_inventario': products_in_inventory_count,
         }
-        return Response(stats)    
+        return Response(stats)
+
+@api_view(['DELETE'])
+def eliminar_socios_sin_ci(request):
+    count, _ = Socio.objects.filter(ci__isnull=True).delete()
+    count2, _ = Socio.objects.filter(ci='').delete()
+    return Response({'message': f'Se eliminaron {count + count2} socios sin CI.'}, status=status.HTTP_200_OK)    

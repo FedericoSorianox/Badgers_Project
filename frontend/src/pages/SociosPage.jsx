@@ -141,6 +141,10 @@ const SociosPage = () => {
     };
     
     const handleDeleteSocio = async (ci) => {
+        if (!ci) {
+            alert("No se puede eliminar un socio sin CI. Por favor, edita el socio y asigna un CI válido o elimínalo manualmente desde la base de datos.");
+            return;
+        }
         if (window.confirm('¿Estás seguro de que quieres eliminar a este socio?')) {
             try {
                 await apiClient.delete(`/socios/${ci}/`);
