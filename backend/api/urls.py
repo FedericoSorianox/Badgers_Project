@@ -40,9 +40,7 @@ urlpatterns = [
     path('socios/', socio_list, name='socio-list'),
      # La URL para la acción de importar
     path('socios/import_csv/', socio_import_csv, name='socio-import-csv'),
-    # ¡LA LÍNEA CLAVE!
-    # Usamos <str:ci> que permite cualquier caracter, incluyendo puntos y guiones.
+    path('socios/limpiar_sin_ci/', eliminar_socios_sin_ci, name='eliminar-socios-sin-ci'),
     path('socios/<str:ci>/', socio_detail, name='socio-detail'),
     path('dashboard-stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
-    path('socios/limpiar_sin_ci/', eliminar_socios_sin_ci, name='eliminar-socios-sin-ci'),
 ]
