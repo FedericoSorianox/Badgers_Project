@@ -5,13 +5,16 @@ import apiClient from '../api';
 import { 
     Button, TextField, Dialog, DialogActions, DialogContent, 
     DialogTitle, Card, CardContent, CardActions, Typography, 
-    Grid, Avatar, Box, Select, MenuItem, InputLabel, FormControl, Container
+    Grid, Avatar, Box, Select, MenuItem, InputLabel, FormControl, Container,
+    Alert, Snackbar
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 
 
 // Componente de Formulario para Crear, Editar y Ver Socios
-const SocioForm = ({ open, onClose, onSave, socio, isViewOnly = false }) => {
+const SocioForm = ({ open, onClose, onSave, socio, isViewOnly = false, sociosList = [] }) => {
     const [formData, setFormData] = useState({});
     const [fotoFile, setFotoFile] = useState(null);
 
@@ -35,6 +38,21 @@ const SocioForm = ({ open, onClose, onSave, socio, isViewOnly = false }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Validación manual de CI
+        if (!formData.ci || formData.ci.trim() === '') {
+            alert('El campo CI es obligatorio.');
+            return;
+        }
+
+        // Validar unicidad de CI usando la prop sociosList
+        if (Array.isArray(sociosList)) {
+            const ciExiste = sociosList.some(s => s.ci === formData.ci && (!socio || s.ci !== socio.ci));
+            if (ciExiste) {
+                alert('El CI ingresado ya existe. Debe ser único.');
+                return;
+            }
+        }
         
         const data = new FormData();
         Object.keys(formData).forEach(key => {
@@ -64,7 +82,7 @@ const SocioForm = ({ open, onClose, onSave, socio, isViewOnly = false }) => {
                 )}
                 
                 {/* Campos del formulario (deshabilitados en modo 'solo lectura') */}
-                <TextField margin="dense" name="ci" label="CI" fullWidth value={formData.ci || ''} onChange={handleChange} disabled={isViewOnly || !!socio} />
+                <TextField margin="dense" name="ci" label="CI" fullWidth value={formData.ci || ''} onChange={handleChange} disabled={isViewOnly} required />
                 <TextField margin="dense" name="nombre" label="Nombre Completo" fullWidth value={formData.nombre || ''} onChange={handleChange} disabled={isViewOnly} />
                 <TextField margin="dense" name="celular" label="Celular" fullWidth value={formData.celular || ''} onChange={handleChange} disabled={isViewOnly} />
                 <TextField margin="dense" name="fecha_nacimiento" label="Fecha de Nacimiento" type="date" fullWidth InputLabelProps={{ shrink: true }} value={formData.fecha_nacimiento || ''} onChange={handleChange} disabled={isViewOnly} />
@@ -110,6 +128,7 @@ const SociosPage = () => {
     const [formOpen, setFormOpen] = useState(false);
     const [editingSocio, setEditingSocio] = useState(null);
     const [viewingSocio, setViewingSocio] = useState(null);
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
     const fetchSocios = async () => {
         try {
@@ -155,6 +174,33 @@ const SociosPage = () => {
         }
     };
 
+    const handleAddToWhatsAppGroup = () => {
+        // Filtrar socios que tienen número de celular
+        const sociosConCelular = socios.filter(socio => socio.celular);
+        
+        if (sociosConCelular.length === 0) {
+            setSnackbar({
+                open: true,
+                message: 'No hay socios con número de celular registrado',
+                severity: 'warning'
+            });
+            return;
+        }
+
+        // Crear el enlace de invitación al grupo
+        // Nota: Este enlace debe ser reemplazado con el enlace real del grupo de WhatsApp
+        const grupoLink = 'https://chat.whatsapp.com/Lhd6sWZwVjlFPKt1fkHJY9';
+        
+        // Abrir WhatsApp Web con el enlace del grupo
+        window.open(grupoLink, '_blank');
+
+        setSnackbar({
+            open: true,
+            message: `Se abrirá WhatsApp para agregar a ${sociosConCelular.length} socios al grupo`,
+            severity: 'info'
+        });
+    };
+
     return (
         <Box sx={{
             minHeight: '100vh',
@@ -191,7 +237,7 @@ const SociosPage = () => {
                 >
                     Gestión de Socios
                 </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, width: '100%' }}>
                     <TextField 
                         label="Buscar por nombre o CI..." 
                         variant="outlined" 
@@ -199,9 +245,23 @@ const SociosPage = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         sx={{ width: '40%' }}
                     />
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => { setEditingSocio(null); setFormOpen(true); }}>
-                        Agregar Socio
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button 
+                            variant="contained" 
+                            color="success"
+                            startIcon={<GroupAddIcon />}
+                            onClick={handleAddToWhatsAppGroup}
+                        >
+                            Agregar al Grupo de WhatsApp
+                        </Button>
+                        <Button 
+                            variant="contained" 
+                            startIcon={<AddIcon />} 
+                            onClick={() => { setEditingSocio(null); setFormOpen(true); }}
+                        >
+                            Agregar Socio
+                        </Button>
+                    </Box>
                 </Box>
 
                 <Grid container spacing={2}>
@@ -242,6 +302,7 @@ const SociosPage = () => {
                     onClose={() => setFormOpen(false)} 
                     onSave={handleSaveSocio} 
                     socio={editingSocio} 
+                    sociosList={socios}
                 />
 
                 {/* Formulario para VER en modo solo lectura */}
@@ -251,8 +312,23 @@ const SociosPage = () => {
                         onClose={() => setViewingSocio(null)}
                         socio={viewingSocio}
                         isViewOnly={true}
+                        sociosList={socios}
                     />
                 )}
+
+                <Snackbar 
+                    open={snackbar.open} 
+                    autoHideDuration={6000} 
+                    onClose={() => setSnackbar({ ...snackbar, open: false })}
+                >
+                    <Alert 
+                        onClose={() => setSnackbar({ ...snackbar, open: false })} 
+                        severity={snackbar.severity}
+                        sx={{ width: '100%' }}
+                    >
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
             </Container>
         </Box>
     );

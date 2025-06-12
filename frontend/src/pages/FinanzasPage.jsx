@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const FinanzasPage = () => {
     const [pagos, setPagos] = useState([]);
@@ -17,6 +18,8 @@ const FinanzasPage = () => {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [filterType, setFilterType] = useState('todos');
+    const [gananciaBruta, setGananciaBruta] = useState('');
+    const [resultados, setResultados] = useState(null);
     
     const today = new Date();
     const [year, setYear] = useState(today.getFullYear());
@@ -128,6 +131,60 @@ const FinanzasPage = () => {
             if (filterType === 'ventas') return 'fecha_venta' in record;
             if (filterType === 'gastos') return 'fecha' in record;
             return true;
+        });
+    };
+
+    const calcularReparto = () => {
+        const ganancia = parseFloat(gananciaBruta);
+        if (isNaN(ganancia) || ganancia < 0) {
+            alert('Por favor, ingrese un valor válido para la ganancia bruta.');
+            return;
+        }
+
+        // Parámetros configurables
+        const PORCENTAJE_PARA_SALARIOS = 0.60;
+        const semanas_por_mes = 4;
+        const horas_socio_1 = 10;  // Fede
+        const horas_socio_2 = 4;   // Guille
+        const horas_socio_3 = 2;   // Gonza
+        const numero_de_socios = 3;
+
+        // 1. Calcular pool de salarios
+        const pool_de_salarios = ganancia * PORCENTAJE_PARA_SALARIOS;
+
+        // 2. Calcular total de horas
+        const total_horas_mensuales = (horas_socio_1 + horas_socio_2 + horas_socio_3) * semanas_por_mes;
+
+        let valor_hora_variable = 0;
+        let salario_socio_1 = 0, salario_socio_2 = 0, salario_socio_3 = 0;
+
+        if (total_horas_mensuales > 0) {
+            // 3. Calcular valor hora variable
+            valor_hora_variable = pool_de_salarios / total_horas_mensuales;
+
+            // 4. Calcular salarios
+            salario_socio_1 = (horas_socio_1 * semanas_por_mes) * valor_hora_variable;
+            salario_socio_2 = (horas_socio_2 * semanas_por_mes) * valor_hora_variable;
+            salario_socio_3 = (horas_socio_3 * semanas_por_mes) * valor_hora_variable;
+        }
+
+        // 5. Calcular ganancia remanente
+        const ganancia_remanente = ganancia - pool_de_salarios;
+        const ganancia_por_inversion = ganancia_remanente / numero_de_socios;
+
+        // 6. Calcular totales finales
+        const total_socio_1 = salario_socio_1 + ganancia_por_inversion;
+        const total_socio_2 = salario_socio_2 + ganancia_por_inversion;
+        const total_socio_3 = salario_socio_3 + ganancia_por_inversion;
+
+        setResultados({
+            pool_de_salarios,
+            valor_hora_variable,
+            ganancia_remanente,
+            ganancia_por_inversion,
+            total_socio_1,
+            total_socio_2,
+            total_socio_3
         });
     };
 
@@ -310,6 +367,98 @@ const FinanzasPage = () => {
                         </Button>
                     </DialogActions>
                 </Dialog>
+
+                <Paper sx={{ p: 3, width: '100%', mt: 4 }}>
+                    <Box sx={{ p: 3 }}>
+                        <Typography variant="h5" gutterBottom>
+                            Calculadora de Reparto para The Badgers
+                        </Typography>
+                        
+                        <Box sx={{ mb: 4 }}>
+                            <TextField
+                                label="Ganancia Bruta Mensual"
+                                type="number"
+                                value={gananciaBruta}
+                                onChange={(e) => setGananciaBruta(e.target.value)}
+                                fullWidth
+                                sx={{ mb: 2 }}
+                                InputProps={{
+                                    startAdornment: <AttachMoneyIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                                }}
+                            />
+                            <Button 
+                                variant="contained" 
+                                onClick={calcularReparto}
+                                fullWidth
+                            >
+                                Calcular Reparto
+                            </Button>
+                        </Box>
+
+                        {resultados && (
+                            <Box>
+                                <Card sx={{ mb: 3 }}>
+                                    <CardContent>
+                                        <Typography variant="h6" gutterBottom>
+                                            Desglose del Cálculo
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Pool destinado a salarios (60%): ${resultados.pool_de_salarios.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Valor por hora de clase: ${resultados.valor_hora_variable.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Ganancia remanente: ${resultados.ganancia_remanente.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Ganancia por inversión: ${resultados.ganancia_por_inversion.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} md={4}>
+                                        <Card>
+                                            <CardContent>
+                                                <Typography variant="h6" gutterBottom>
+                                                    Fede (10hs/sem)
+                                                </Typography>
+                                                <Typography variant="h4" color="primary">
+                                                    ${resultados.total_socio_1.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                    <Grid item xs={12} md={4}>
+                                        <Card>
+                                            <CardContent>
+                                                <Typography variant="h6" gutterBottom>
+                                                    Guille (4hs/sem)
+                                                </Typography>
+                                                <Typography variant="h4" color="primary">
+                                                    ${resultados.total_socio_2.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                    <Grid item xs={12} md={4}>
+                                        <Card>
+                                            <CardContent>
+                                                <Typography variant="h6" gutterBottom>
+                                                    Gonza (2hs/sem)
+                                                </Typography>
+                                                <Typography variant="h4" color="primary">
+                                                    ${resultados.total_socio_3.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                </Grid>
+                            </Box>
+                        )}
+                    </Box>
+                </Paper>
             </Container>
         </Box>
     );

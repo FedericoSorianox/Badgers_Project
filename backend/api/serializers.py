@@ -19,9 +19,8 @@ class SocioSerializer(serializers.ModelSerializer):
             'tipo_cuota', 'contacto_emergencia', 'emergencia_movil', 
             'enfermedades', 'comentarios', 'fecha_registro'
         ]
-        # Como ya pusimos read_only=True arriba, podemos quitar 'fecha_registro' de aquí si quieres,
-        # aunque no afecta si lo dejas. Lo mantenemos simple.
-        read_only_fields = ['ci']
+        # Solo 'fecha_registro' es read_only
+        read_only_fields = ['fecha_registro']
 
 class PagoSerializer(serializers.ModelSerializer):
     class Meta:

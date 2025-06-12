@@ -26,14 +26,10 @@ def parse_date_from_csv(date_str):
 class SocioViewSet(viewsets.ModelViewSet):
     queryset = Socio.objects.all().order_by('nombre')
     serializer_class = SocioSerializer
-    pagination_class = None  # <--- Agrega esta línea para desactivar la paginación
-    
-     # --- ¡AÑADE ESTA LÍNEA! ---
-    # Le dice a Django REST Framework que use el campo 'ci' en la URL 
-    # en lugar del 'id' por defecto.
-    lookup_field = 'ci' 
+    pagination_class = None
+    lookup_field = 'ci'
     filter_backends = [filters.SearchFilter]
-    search_fields = ['nombre', 'ci'] # Campos en los que buscará
+    search_fields = ['nombre', 'ci']
 
     @action(detail=False, methods=['post'], parser_classes=[MultiPartParser])
     def import_csv(self, request, *args, **kwargs):
@@ -74,6 +70,22 @@ class SocioViewSet(viewsets.ModelViewSet):
             "message": f"Importación completada. {success_count} socios importados/actualizados, {error_count} errores.",
             "errors": errors
         }, status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        ci_original = kwargs.get('ci')
+        ci_nuevo = request.data.get('ci')
+
+        if ci_original != ci_nuevo:
+            if Socio.objects.filter(ci=ci_nuevo).exists():
+                return Response({'error': 'Ya existe un socio con ese CI.'}, status=status.HTTP_400_BAD_REQUEST)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_destroy(instance)
+            self.perform_create(serializer)
+            return Response(serializer.data)
+        else:
+            return super().update(request, *args, **kwargs)
 
 
 class PagoViewSet(viewsets.ModelViewSet):

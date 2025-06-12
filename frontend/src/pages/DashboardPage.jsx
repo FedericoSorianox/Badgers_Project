@@ -1,11 +1,12 @@
 // src/pages/DashboardPage.jsx
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, CardContent, Typography, Box, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, IconButton, Container, useTheme, useMediaQuery } from '@mui/material';
+import { Grid, Card, CardContent, Typography, Box, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, IconButton, Container, useTheme, useMediaQuery, Button } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import PeopleIcon from '@mui/icons-material/People'; // Iconos para un look más profesional
 import InventoryIcon from '@mui/icons-material/Inventory';
 import PaymentIcon from '@mui/icons-material/Payment';
 import CloseIcon from '@mui/icons-material/Close';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import apiClient from '../api';
 
 // Lista de socios que no pagan mensualidad
@@ -352,6 +353,21 @@ const DashboardPage = () => {
                                         }
                                         secondary={`CI: ${socio.ci}`}
                                     />
+                                    {socio.celular && (
+                                        <Button
+                                            variant="contained"
+                                            color="success"
+                                            startIcon={<WhatsAppIcon />}
+                                            onClick={() => {
+                                                const message = `Hola ${socio.nombre}! Te recordamos que tienes pendiente el pago de la cuota mensual de The Badgers. Por favor, acércate al gimnasio para regularizar tu situación. ¡Gracias!`;
+                                                const whatsappUrl = `https://wa.me/${socio.celular.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+                                                window.open(whatsappUrl, '_blank');
+                                            }}
+                                            sx={{ ml: 2 }}
+                                        >
+                                            Enviar Recordatorio
+                                        </Button>
+                                    )}
                                 </ListItem>
                             ))}
                         </List>
